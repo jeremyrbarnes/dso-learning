@@ -56,19 +56,19 @@ jobs:
         run: terraform init -chdir=Terraform
 
       - name: Terraform Format Check
-        run: terraform fmt -check --diff -chdir=Terraform
+        run: terraform -chdir=Terraform fmt -check --diff
 
       - name: Terraform Validate
-        run: terraform validate -chdir=Terraform
+        run: terraform -chdir=Terraform validate
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
-        run: terraform plan -input=false -chdir=Terraform
+        run: terraform -chdir=Terraform plan -input=false
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
-        run: terraform apply -auto-approve -chdir=Terraform
+        run: terraform -chdir=Terraform apply -auto-approve
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform destroy -auto-approve -chdir=Terraform
+        run: terraform -chdir=Terraform destroy -auto-approve
