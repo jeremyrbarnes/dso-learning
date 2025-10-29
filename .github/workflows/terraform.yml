@@ -53,22 +53,22 @@ jobs:
             ${{ runner.os }}-terraform-
 
       - name: Initialising the Terraform
-        run: terraform init
+        run: terraform init Terraform
 
       - name: Terraform Format Check
-        run: terraform fmt -check --diff
+        run: terraform fmt -check --diff Terraform
 
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform validate Terraform
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
-        run: terraform plan -input=false
+        run: terraform plan -input=false Terraform
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve Terraform
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform destroy -auto-approve
+        run: terraform destroy -auto-approve Terraform
