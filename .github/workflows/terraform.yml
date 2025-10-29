@@ -53,7 +53,7 @@ jobs:
             ${{ runner.os }}-terraform-
 
       - name: Initialising the Terraform
-        run: terraform init -chdir=Terraform
+        run: terraform -chdir=Terraform init
 
       - name: Terraform Format Check
         run: terraform -chdir=Terraform fmt -check --diff
