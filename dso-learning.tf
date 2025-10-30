@@ -18,18 +18,26 @@ provider "aws" {
 # gather.tf
 data "aws_ami" "ubuntu" {
   most_recent = true
-
+  owners      = ["099720109477"] # Canonical's AWS account ID
+  
   filter {
-    name = "name"
-    values = [
-      "ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*",
-      "ubuntu/images/hvm/ubuntu-noble-24.04-amd64-server-*",
-      "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amg64-*",
-      "ubuntu/images/hvm-ebs-gp3/ubuntu-noble-24.04-amd64-server-*"
-    ]
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*"]
   }
 
-  owners = ["099720109477"]
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+}
+
+output "ubuntu_ami_id" {
+  value = data.aws_ami.ubuntu_noble.id
 }
 
 # iam.tf
@@ -39,9 +47,9 @@ resource "aws_iam_role" "role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Sid       = ""
         Principal = {
           Service = "ec2.amazonaws.com"
         }
