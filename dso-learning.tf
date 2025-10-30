@@ -55,10 +55,15 @@ resource "aws_iam_role" "role" {
   }
 }
 
+resource "aws_iam_instance_profile" "dev_profile" {
+  name = "dev_profile"
+  role = aws_iam_role.role.name
+}
+
 ##################################################
 # vpc.tf
 locals {
-  org      = "aman"
+  org      = "jeremybarnes"
   project  = "netflix-clone"
   env      = var.env
 }
