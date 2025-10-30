@@ -19,7 +19,7 @@ provider "aws" {
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical's AWS account ID
-  
+
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*"]
@@ -37,7 +37,7 @@ data "aws_ami" "ubuntu" {
 }
 
 output "ubuntu_ami_id" {
-  value = data.aws_ami.ubuntu_noble.id
+  value = data.aws_ami.ubuntu.id
 }
 
 # iam.tf
