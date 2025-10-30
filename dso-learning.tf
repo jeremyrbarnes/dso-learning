@@ -55,8 +55,8 @@ resource "aws_iam_role" "role" {
   }
 }
 
-resource "aws_iam_instance_profile" "dev_profile" {
-  name = "dev_profile"
+resource "aws_iam_instance_profile" "iam_instance_profile" {
+  name = "iam_instance_profile"
   role = aws_iam_role.role.name
 }
 
