@@ -63,7 +63,7 @@ locals {
   env      = var.env
 }
 
-resource "aws_vpc "vpc" {
+resource "aws_vpc" "vpc" {
   cidr_block           = var.cidr-block
   instance_tenancy     = "default"
   enable_dns_hostnames = true
@@ -101,7 +101,7 @@ resource "aws_subnet" "public-subnet" {
   depends_on = [aws_vpc.vpc]
 }
 
-resource "aws_route_table" " public-rt" {
+resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.vpc.id
 
   route { 
