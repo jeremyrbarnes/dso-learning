@@ -55,11 +55,11 @@ jobs:
       - name: Initialising the Terraform
         run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
-
       - name: Terraform Format Check
         run: terraform fmt -check --diff
+
+      - name: Terraform Validate
+        run: terraform validate
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
