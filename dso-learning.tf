@@ -11,7 +11,7 @@ terraform {
   cloud {}
 }
 provider "aws" {
-  region = var.aws-region
+  region = var.aws_region
 }
 
 ###################################################
@@ -64,7 +64,7 @@ locals {
 }
 
 resource "aws_vpc" "vpc" {
-  cidr_block           = var.cidr-block
+  cidr_block           = var.cidr_block
   instance_tenancy     = "default"
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -87,10 +87,10 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_subnet" "public-subnet" {
-  count                    = var.pub-subnet-count
+  count                    = var.pub_subnet_count
   vpc_id                   = aws_vpc.vpc.id
-  cidr_block               = element(var.pub-cird-block, count.index)
-  availability_zone        = element(var.pub-availability-zone, count.index)
+  cidr_block               = element(var.pub_cidr_block, count.index)
+  availability_zone        = element(var.pub_availability_zone, count.index)
   map_public_ip_on_launch  = true
 
   tags = {
@@ -154,7 +154,7 @@ locals {
 }
 
 resource "aws_instance" "ec2" {
-  count                    = var.ec2-instance-count
+  count                    = var.ec2_instance_count
   ami                      = data.aws_ami.ubuntu.id
   subnet_id                = aws_subnet.public-subnet[count.index].id
   instance_type            = var.ec2_instance_type[count.index]
@@ -173,34 +173,46 @@ resource "aws_instance" "ec2" {
 
 #########################################################
 # variables.tf
-variable "aws_region" {}
-variable "env" {}
-variable "cidr_block" {}
-variable "pub-subnet-count" {}
-variable "pub-cidr-block" {
-  type = list(string)
+variable "aws_region" {
+  type       = string
+  default    = "us-east-1"
 }
-variable "pub-availability-zone" {
-  type = list(string)
+variable "env" {
+  type       = string
+  default    = "dev"
 }
-variable "ec2-instance-count" {}
+variable "cidr_block" {
+  type       = string
+  default    = "10.0.0.0/16"
+}
+variable "pub_subnet_count" {
+  type       = number
+  default    = 4
+}
+variable "pub_cidr_block" {
+  type       = list(string)
+  default    = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20", "10.0.64.0/20"]
+}
+variable "pub_availability_zone" {
+  type       = list(string)
+  default    = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]
+}
+variable "ec2_instance_count" {
+  type       = number
+  default    = 4
+}
 variable "ec2_instance_type" {
-  type = list(string)
+  type       = list(string)
+  default    = ["t3a.xlarge", "t3a.medium", "t3a.medium", "t3a.medium"]
 }
-variable "ec2_volume_size" {}
-variable "ec2_volume_type" {}
-
-#######################################################
-# dev.auto.tfvars
-aws-region                    = "us-east-1"
-env                           = "dev"
-cidr-block                    = "10.0.0.0/16"
-pub-subnet-count              = 4
-pub-cidr-block                = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20", "10.0.64.0/20"]
-pub-availability-zone         = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]
-ec2-instance-count            = 4
-ec2-instance_type             = ["t3a.xlarge", "t3a.medium", "t3a.medium", "t3a.medium"]
-ec2_volume_type               = "gp3"
+variable "ec2_volume_size" {
+  type       = number
+  default    = 50
+}
+variable "ec2_volume_type" {
+  type       = string
+  default    = "gp3"
+}
 
 
  
