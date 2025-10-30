@@ -114,7 +114,7 @@ resource "aws_route_table" "public-rt" {
     env  = var.env
   }
 
-  depends_on aws_vpc.vpc.id
+  depends_on = aws_vpc.vpc.id
 }
 
 resource "aws_security_group" "default-ec2-sg" {
