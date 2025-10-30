@@ -114,7 +114,7 @@ resource "aws_route_table" "public-rt" {
     env  = var.env
   }
 
-  depends_on = aws_vpc.vpc.id
+  depends_on = [aws_vpc.vpc.id]
 }
 
 resource "aws_security_group" "default-ec2-sg" {
@@ -145,7 +145,7 @@ resource "aws_security_group" "default-ec2-sg" {
 #######################################################
 # main.tf
 locals {
-  instance_names [
+  instance_names = [
     "jenkins-server",
     "monitoring-server",
     "kubernetes-master-node",
