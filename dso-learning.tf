@@ -41,8 +41,8 @@ output "ubuntu_ami_id" {
 }
 
 # iam.tf
-resource "aws_iam_role" "role" {
-  name = "${local.org}-${local.project}-${local.env}-ssm-iam-role"
+resource "aws_iam_role" "ec2_role" {
+  name = "${local.org}-${local.project}-${local.env}-ec2-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -58,13 +58,18 @@ resource "aws_iam_role" "role" {
   })
 
   tags = {
-    Name = "${local.org}-${local.project}-${local.env}-ssm-iam-role"
+    Name = "${local.org}-${local.project}-${local.env}-ec2-role"
     Env  = "${local.env}"
   }
 }
 
-resource "aws_iam_instance_profile" "iam_instance_profile" {
-  name = "iam_instance_profile"
+resource = "aws_iam_role_policy_attachment" "custom" {
+  name = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "netflix-clone-ec2-profile"
   role = aws_iam_role.role.name
 }
 
@@ -171,7 +176,7 @@ resource "aws_instance" "ec2" {
   ami                    = data.aws_ami.ubuntu.id
   subnet_id              = aws_subnet.public-subnet[count.index].id
   instance_type          = var.ec2_instance_type[count.index]
-  iam_instance_profile   = aws_iam_instance_profile.iam_instance_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.netflix-clone-ec2-profile.name
   vpc_security_group_ids = [aws_security_group.default-ec2-sg.id]
   root_block_device {
     volume_size = var.ec2_volume_size
