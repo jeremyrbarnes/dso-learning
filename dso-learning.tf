@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "custom" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
+resource "aws_iam_instance_profile" "netflix-clone-ec2-profile" {
   name = "netflix-clone-ec2-profile"
   role = aws_iam_role.ec2_role.name
 }
