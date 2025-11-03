@@ -160,6 +160,27 @@ resource "aws_security_group" "default-ec2-sg" {
   }
 }
 
+resource "aws_security_group" "ec2-ssm_https" {
+  name        = "${local.org}-${local.project}-${local.env}-sg-ssm"
+  description = "Allow SSM traffic"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = aws_vpc.private_subnets_cidr_blocks
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = "ssm ingress and egress"
+}
+
 #######################################################
 # main.tf
 locals {
@@ -177,7 +198,7 @@ resource "aws_instance" "ec2" {
   subnet_id              = aws_subnet.public-subnet[count.index].id
   instance_type          = var.ec2_instance_type[count.index]
   iam_instance_profile   = aws_iam_instance_profile.netflix-clone-ec2-profile.name
-  vpc_security_group_ids = [aws_security_group.default-ec2-sg.id]
+  vpc_security_group_ids = [aws_security_group.default-ec2-sg.id, aws_security_group.]
   root_block_device {
     volume_size = var.ec2_volume_size
     volume_type = var.ec2_volume_type
@@ -189,36 +210,16 @@ resource "aws_instance" "ec2" {
   }
 }
 
-resource "aws_vpc_endpoint" "ssm_endpoint" {
-  for_each            = instance_names
-  vpc_id              = aws_vpc.main.id
-  service_name        = each.value.name
-  vpc_endpoint_type   = "Interface"
-  security_group_ids  = [aws_security_group.ssm_https.id]
-  private_dns_enabled = true
-  ip_address_type     = "ipv4"
-  subnet_ids          = [aws_subnet.private.id]
-}
-
-resource "aws_security_group" "ssm_https" {
-  name        = "allow_ssm"
-  description = "Allow SSM traffic"
-  vpc_id      = module.vpc.vpc_id
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = module.vpc.private_subnets_cidr_blocks
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  tags = "ssm ingress and egress"
-}
+# resource "aws_vpc_endpoint" "ssm_endpoint" {
+#   for_each            = instance_names
+#   vpc_id              = aws_vpc.main.id
+#   service_name        = each.value.name
+#   vpc_endpoint_type   = "Interface"
+#   security_group_ids  = [aws_security_group.ssm_https.id]
+#   private_dns_enabled = true
+#   ip_address_type     = "ipv4"
+#   subnet_ids          = [aws_subnet.private.id]
+# }
 
 #########################################################
 # variable "aws_region" {
