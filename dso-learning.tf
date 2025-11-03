@@ -9,6 +9,8 @@ terraform {
       version = "~> 6.14.1"
     }
   }
+
+  cloud {}
 }
 
 # Configure the AWS Provider with your desired region
