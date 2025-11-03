@@ -172,12 +172,12 @@ resource "aws_security_group" "ec2-ssm_https" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # egress {
+  #   from_port   = 0
+  #   to_port     = 0
+  #   protocol    = "-1"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
   tags = {
     Name = "ssm ingress and egress"
   }
@@ -206,64 +206,25 @@ resource "aws_instance" "ec2" {
     volume_type = var.ec2_volume_type
   }
 
+  user_data = <<-EOF
+    #!/bin/bash
+    # Ensure snap is installed (standard on modern Ubuntu, but good practice)
+    apt update -y
+    apt install snapd -y
+    
+    # Install the SSM Agent using the snap package manager
+    snap install amazon-ssm-agent --classic
+    
+    # Ensure the SSM Agent service is started and enabled
+    systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
+    systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
+    
+    # Wait a few seconds for the agent to register with the SSM service
+    sleep 30
+  EOF
+
   tags = {
     Name = "${local.org}-${local.project}-${local.env}-${local.instance_names[count.index]}"
     Env  = "${local.env}"
   }
 }
-
-# resource "aws_vpc_endpoint" "ssm_endpoint" {
-#   for_each            = instance_names
-#   vpc_id              = aws_vpc.main.id
-#   service_name        = each.value.name
-#   vpc_endpoint_type   = "Interface"
-#   security_group_ids  = [aws_security_group.ssm_https.id]
-#   private_dns_enabled = true
-#   ip_address_type     = "ipv4"
-#   subnet_ids          = [aws_subnet.private.id]
-# }
-
-#########################################################
-# variable "aws_region" {
-#   type       = string
-#   default    = "us-east-1"
-# }
-# variable "env" {
-#   type       = string
-#   default    = "dev"
-# }
-# variable "cidr_block" {
-#   type       = string
-#   default    = "10.0.0.0/16"
-# }
-# variable "pub_subnet_count" {
-#   type       = number
-#   default    = 4
-# }
-# variable "pub_cidr_block" {
-#   type       = list(string)
-#   default    = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20", "10.0.64.0/20"]
-# }
-# variable "pub_availability_zone" {
-#   type       = list(string)
-#   default    = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]
-# }
-# variable "ec2_instance_count" {
-#   type       = number
-#   default    = 4
-# }
-# variable "ec2_instance_type" {
-#   type       = list(string)
-#   default    = ["t3a.xlarge", "t3a.medium", "t3a.medium", "t3a.medium"]
-# }
-# variable "ec2_volume_size" {
-#   type       = number
-#   default    = 50
-# }
-# variable "ec2_volume_type" {
-#   type       = string
-#   default    = "gp3"
-# }
-
-
-
