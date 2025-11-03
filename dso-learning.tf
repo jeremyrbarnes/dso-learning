@@ -198,7 +198,7 @@ resource "aws_instance" "ec2" {
   subnet_id              = aws_subnet.public-subnet[count.index].id
   instance_type          = var.ec2_instance_type[count.index]
   iam_instance_profile   = aws_iam_instance_profile.netflix-clone-ec2-profile.name
-  vpc_security_group_ids = [aws_security_group.default-ec2-sg.id, aws_security_group.]
+  vpc_security_group_ids = [aws_security_group.default-ec2-sg.id, aws_security_group.ec2-ssm_https]
   root_block_device {
     volume_size = var.ec2_volume_size
     volume_type = var.ec2_volume_type
