@@ -210,15 +210,10 @@ resource "aws_instance" "ec2" {
     #!/bin/bash
     # Ensure snap is installed (standard on modern Ubuntu, but good practice)
     apt update -y
-    apt install snapd -y
-    
-    # Install the SSM Agent using the snap package manager
-    snap install amazon-ssm-agent --classic
-    
-    # Ensure the SSM Agent service is started and enabled
-    systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
-    systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
-    
+    sudo apt install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+    sudo systemctl enable amazon-ssm-agent
+    sudo systemctl start amazon-ssm-agent    
+
     # Wait a few seconds for the agent to register with the SSM service
     sleep 30
   EOF
