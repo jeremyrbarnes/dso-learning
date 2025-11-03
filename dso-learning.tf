@@ -169,7 +169,7 @@ resource "aws_security_group" "ec2-ssm_https" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = aws_vpc.private_subnets_cidr_blocks
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
