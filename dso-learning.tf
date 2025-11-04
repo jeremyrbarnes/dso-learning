@@ -1,4 +1,6 @@
-# backend.tf
+# main.tf
+
+## 1. AWS Provider and Region Configuration
 terraform {
   required_version = "~> 1.13.3"
   required_providers {
@@ -10,6 +12,8 @@ terraform {
 
   cloud {}
 }
+
+# Configure the AWS Provider with your desired region
 provider "aws" {
   region = var.aws_region
 }
@@ -36,11 +40,10 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-output "ubuntu_ami_id" {
-  value = data.aws_ami.ubuntu.id
-}
+## 3. IAM Role and Instance Profile for Session Manager (SSM)
+# Session Manager requires an IAM role with the correct policy attached to the EC2 instance.
 
-# iam.tf
+# 3a. IAM Role
 resource "aws_iam_role" "ec2_role" {
   name = "${local.org}-${local.project}-${local.env}-ec2-role"
   assume_role_policy = jsonencode({
@@ -63,7 +66,7 @@ resource "aws_iam_role" "ec2_role" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "custom" {
+resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
@@ -141,12 +144,12 @@ resource "aws_security_group" "default-ec2-sg" {
 
   vpc_id = aws_vpc.vpc.id
 
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] // It should be specific IP range
-  }
+  # ingress {
+  #   from_port   = 0
+  #   to_port     = 0
+  #   protocol    = "-1"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   egress {
     from_port   = 0
@@ -160,37 +163,12 @@ resource "aws_security_group" "default-ec2-sg" {
   }
 }
 
-resource "aws_security_group" "ec2-ssm_https" {
-  name        = "${local.org}-${local.project}-${local.env}-sg-ssm"
-  description = "Allow SSM traffic"
-  vpc_id      = aws_vpc.vpc.id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # egress {
-  #   from_port   = 0
-  #   to_port     = 0
-  #   protocol    = "-1"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-  tags = {
-    Name = "ssm ingress and egress"
-  }
-}
-
-#######################################################
-# main.tf
 locals {
   instance_names = [
     "jenkins-server",
     "monitoring-server",
     "kubernetes-master-node",
-    "kubernetes-worker-node"
+    "kubernetes-worker-node",
   ]
 }
 
@@ -200,26 +178,29 @@ resource "aws_instance" "ec2" {
   subnet_id              = aws_subnet.public-subnet[count.index].id
   instance_type          = var.ec2_instance_type[count.index]
   iam_instance_profile   = aws_iam_instance_profile.netflix-clone-ec2-profile.name
-  vpc_security_group_ids = [aws_security_group.default-ec2-sg.id, aws_security_group.ec2-ssm_https.id]
+  vpc_security_group_ids = [aws_security_group.default-ec2-sg.id]
   root_block_device {
     volume_size = var.ec2_volume_size
     volume_type = var.ec2_volume_type
   }
 
-  user_data = <<-EOF
-    #!/bin/bash
-    # Ensure snap is installed (standard on modern Ubuntu, but good practice)
-    apt update -y
-    sudo apt install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-    sudo systemctl enable amazon-ssm-agent
-    sudo systemctl start amazon-ssm-agent    
+  # user_data = <<-EOF
+  #   #!/bin/bash
+  #   # Ensure snap is installed (standard on modern Ubuntu, but good practice)
+  #   apt update -y
+  #   sudo apt install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+  #   sudo systemctl enable amazon-ssm-agent
+  #   sudo systemctl start amazon-ssm-agent    
 
-    # Wait a few seconds for the agent to register with the SSM service
-    sleep 30
-  EOF
+  #   # Wait a few seconds for the agent to register with the SSM service
+  #   sleep 30
+  # EOF
 
   tags = {
     Name = "${local.org}-${local.project}-${local.env}-${local.instance_names[count.index]}"
     Env  = "${local.env}"
   }
 }
+
+
+
