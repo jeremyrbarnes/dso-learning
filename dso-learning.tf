@@ -40,10 +40,6 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-data "aws_key_pair" "netflix-clone-ec2-key" {
-  key_name      = "dso-learning-kp"
-}
-
 ## 3. IAM Role and Instance Profile for Session Manager (SSM)
 # Session Manager requires an IAM role with the correct policy attached to the EC2 instance.
 
@@ -176,6 +172,10 @@ locals {
   ]
 }
 
+data "aws_key_pair" "netflix-clone-ec2-key-pair" {
+  key_name = "dso-learning-kp"
+}
+
 resource "aws_instance" "ec2" {
   count                  = var.ec2_instance_count
   ami                    = data.aws_ami.ubuntu.id
@@ -183,7 +183,7 @@ resource "aws_instance" "ec2" {
   instance_type          = var.ec2_instance_type[count.index]
   iam_instance_profile   = aws_iam_instance_profile.netflix-clone-ec2-profile.name
   vpc_security_group_ids = [aws_security_group.default-ec2-sg.id]
-  key_name               = aws_key_pair.netflix-clone-ec2-key.key_name
+  key_name               = data.aws_key_pair.netflix-clone-ec2-key-pair.key_name
   root_block_device {
     volume_size = var.ec2_volume_size
     volume_type = var.ec2_volume_type
